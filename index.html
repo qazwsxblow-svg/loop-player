@@ -36,13 +36,36 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        async function search() {
-            const query = document.getElementById('searchInput').value;
-            if(!query) return;
+async function search() {
+    const query = document.getElementById('searchInput').value;
+    const resultsDiv = document.getElementById('results-list');
+    
+    // ЗАМЕНИ ЭТУ ССЫЛКУ НА СВОЮ ИЗ NGROK
+    const serverUrl = "https://milkless-rachel-brandless.ngrok-free.dev";
 
-            // ПОКА ЧТО мы оставим это пустым, так как нам нужно запустить API на Python
-            alert("Ищу: " + query + ". Сейчас мы настроим сервер, чтобы результаты появились здесь!");
+    resultsDiv.innerHTML = "Ищу...";
+    
+    try {
+        const response = await fetch(`${serverUrl}/search?query=${query}`);
+        const data = await response.json();
+        
+        if (data.url) {
+            resultsDiv.innerHTML = `
+                <div class="track-card" onclick="playTrack('${data.url}', '${data.title}')">
+                    <img src="${data.thumbnail}" width="50" style="border-radius: 4px;">
+                    <div class="track-info">
+                        <div class="track-title">${data.title}</div>
+                        <div class="track-artist">YouTube Stream</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            resultsDiv.innerHTML = "Ничего не найдено.";
         }
+    } catch (e) {
+        resultsDiv.innerHTML = "Ошибка связи с сервером.";
+    }
+}
 
         function playTrack(url, title) {
             const playerBar = document.getElementById('player-bar');
