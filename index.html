@@ -40,33 +40,42 @@ async function search() {
     const query = document.getElementById('searchInput').value;
     const resultsDiv = document.getElementById('results-list');
     
-    // ЗАМЕНИ ЭТУ ССЫЛКУ НА СВОЮ ИЗ NGROK
-    const serverUrl = "https://milkless-rachel-brandless.ngrok-free.dev";
+    // ВНИМАНИЕ: Ссылка ДОЛЖНА БЫТЬ БЕЗ слэша в конце!
+    const serverUrl = "https://milkless-rachel-brandless.ngrok-free.dev"; 
 
-    resultsDiv.innerHTML = "Ищу...";
+    resultsDiv.innerHTML = "🔍 Ищу в базе...";
     
     try {
-        const response = await fetch(`${serverUrl}/search?query=${query}`);
+        // Мы явно добавляем /search перед знаком вопроса
+        const fullUrl = `${serverUrl}/search?query=${encodeURIComponent(query)}`;
+        console.log("Запрос пошел на:", fullUrl);
+
+        const response = await fetch(fullUrl);
+        
+        if (!response.ok) {
+            throw new Error(`Ошибка сервера: ${response.status}`);
+        }
+
         const data = await response.json();
         
         if (data.url) {
             resultsDiv.innerHTML = `
                 <div class="track-card" onclick="playTrack('${data.url}', '${data.title}')">
-                    <img src="${data.thumbnail}" width="50" style="border-radius: 4px;">
+                    <img src="${data.thumbnail}" width="50" height="50" style="border-radius: 4px; object-fit: cover;">
                     <div class="track-info">
                         <div class="track-title">${data.title}</div>
-                        <div class="track-artist">YouTube Stream</div>
+                        <div class="track-artist">Нажми, чтобы играть</div>
                     </div>
                 </div>
             `;
         } else {
-            resultsDiv.innerHTML = "Ничего не найдено.";
+            resultsDiv.innerHTML = "❌ Ничего не найдено.";
         }
     } catch (e) {
-        resultsDiv.innerHTML = "Ошибка связи с сервером.";
+        resultsDiv.innerHTML = `⚠️ Связь прервана: ${e.message}`;
+        console.error(e);
     }
 }
-
         function playTrack(url, title) {
             const playerBar = document.getElementById('player-bar');
             const audio = document.getElementById('audioPlayer');
